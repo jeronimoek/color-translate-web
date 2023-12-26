@@ -2,6 +2,7 @@
   "name": "color-translate-web",
   "version": "0.1.0",
   "private": true,
+  "homepage": "/color-translate-web/",
   "dependencies": {
     "@ant-design/icons": "^5.0.1",
     "@craco/craco": "^7.0.0",
