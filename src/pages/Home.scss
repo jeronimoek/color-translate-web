@@ -8,17 +8,16 @@
     display: flex;
     flex-direction: column;
 
-    .add-form {
-      margin-top: 10px;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      .ant-form-item {
-        width: 100%;
-        input {
-          border-color: gray;
-        }
+    .format {
+      margin: 10px;
+      h4 {
+        margin: 10px 0;
       }
+    }
+
+    .format + .format {
+      margin-top: 20px;
+      border-top: dashed white 2px;
     }
   }
 }
