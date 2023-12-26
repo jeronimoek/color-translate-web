@@ -60,7 +60,7 @@ export function ColorSlider<T extends keyof ColorTranslator>({
     }
 
     return `linear-gradient(90deg, ${steps.join(', ')})`
-  }, [color])
+  }, [stepsNum, color])
 
   const propValue = (color[format] as Color)[prop as keyof Color] as number
   const propPercentage = propToPercentage(propValue, format, prop)

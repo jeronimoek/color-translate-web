@@ -13,6 +13,7 @@ export interface ITask {
 }
 
 export function Home() {
+  const [stepsNum, setStepsNum] = useState<number>(7)
   const [color, setColor] = useState<ColorTranslator>(
     new ColorTranslator({
       r: 255,
@@ -22,13 +23,7 @@ export function Home() {
     }),
   )
 
-  const formats = [
-    'rgb',
-    'hsl',
-    // 'hwb',
-    'lab',
-    'lch',
-  ] as const
+  const formats = ['rgb', 'hsl', 'hwb', 'lab', 'lch'] as const
 
   function onClick<T extends keyof ColorTranslator>(
     percentage: number,
@@ -56,17 +51,29 @@ export function Home() {
               color={color}
               format={format}
               prop={prop}
+              stepsNum={stepsNum}
             />
           </div>
         ))}
       </div>
     ))
-  }, [color, setColor])
+  }, [stepsNum, color])
 
   return (
     <div className="home">
       <div className="home_container">
         <h1>My Formats</h1>
+        <div>
+          <input
+            type="number"
+            value={stepsNum}
+            min={0}
+            max={100}
+            onChange={e => {
+              setStepsNum(parseInt(e.target.value))
+            }}
+          />
+        </div>
         <div>{sliders}</div>
       </div>
     </div>
