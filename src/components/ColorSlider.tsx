@@ -11,7 +11,10 @@ function propToPercentage<T extends keyof ColorTranslator>(
   if (format === 'rgb') {
     return number / 255
   } else if (
-    (format === 'hsl' || format === 'hwb' || format === 'lch') &&
+    (format === 'hsl' ||
+      format === 'hwb' ||
+      format === 'lch' ||
+      format === 'oklch') &&
     prop === 'h'
   ) {
     return number / 360
@@ -21,6 +24,10 @@ function propToPercentage<T extends keyof ColorTranslator>(
     return (number / 125 + 1) / 2
   } else if (format === 'lch' && prop === 'c') {
     return number / 150
+  } else if (format === 'oklab' && (prop === 'a' || prop === 'b')) {
+    return (number / 0.4 + 1) / 2
+  } else if (format === 'oklch' && prop === 'c') {
+    return number / 0.4
   }
 
   return number
@@ -46,18 +53,23 @@ export function ColorSlider<T extends keyof ColorTranslator>({
 
     for (let i = 0; i < stepsNum; i++) {
       let step: number
-      if (format === 'lab' && (prop === 'a' || prop === 'b')) {
+      if (
+        (format === 'lab' || format === 'oklab') &&
+        (prop === 'a' || prop === 'b')
+      ) {
         step = (i / (stepsNum - 1)) * 200 - 100
       } else {
         step = (i / (stepsNum - 1)) * 100
       }
+
+      const stringFormat = format !== 'cmyk' ? format : 'rgb'
 
       steps.push(
         (
           new ColorTranslator({
             ...(color[format] as Color),
             [prop]: `${step}%`,
-          })[format] as { toString: () => string }
+          })[stringFormat] as { toString: () => string }
         ).toString(),
       )
     }
@@ -80,7 +92,10 @@ export function ColorSlider<T extends keyof ColorTranslator>({
           const x = e.clientX - rect.left
           if (x < 0 || x > rect.width) return
           let percentage = x / rect.width
-          if (format === 'lab' && (prop === 'a' || prop === 'b')) {
+          if (
+            (format === 'lab' || format === 'oklab') &&
+            (prop === 'a' || prop === 'b')
+          ) {
             percentage = percentage * 2 - 1
           }
           onClick(percentage)
