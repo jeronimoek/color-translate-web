@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import './Home.scss'
 import { ColorSlider } from 'components/ColorSlider'
-import ColorTranslator, { Color } from 'color-translate'
+import ColorTranslator from 'color-translate'
+import { DEFAULT_STEPS_NUM } from 'shared/constants'
 
 export interface ITask {
   id: number
@@ -13,15 +14,17 @@ export interface ITask {
 }
 
 export function Home() {
-  const [stepsNum, setStepsNum] = useState<number>(7)
-  const [color, setColor] = useState<ColorTranslator>(
-    new ColorTranslator({
+  const [stepsNum, setStepsNum] = useState<number>(DEFAULT_STEPS_NUM)
+  const [colorObject, setColorObject] = useState<{ color: ColorTranslator }>({
+    color: new ColorTranslator({
       r: 255,
       g: 255,
       b: 123,
       alpha: 1,
     }),
-  )
+  })
+
+  const { color } = colorObject
 
   const formats = ['rgb', 'hsl', 'hwb', 'lab', 'lch'] as const
 
@@ -30,12 +33,29 @@ export function Home() {
     format: T,
     prop: T[number],
   ) {
-    setColor(
-      new ColorTranslator({
-        ...(color[format] as Color),
-        [prop]: `${percentage * 100}%`,
-      }),
-    )
+    const updateObject = {
+      [prop]: `${percentage * 100}%`,
+    }
+
+    switch (format) {
+      case 'hsl':
+        color.updateHsl(updateObject)
+        break
+      case 'hwb':
+        color.updateHwb(updateObject)
+        break
+      case 'lab':
+        color.updateLab(updateObject)
+        break
+      case 'lch':
+        color.updateLch(updateObject)
+        break
+      case 'rgb':
+      default:
+        color.updateRgb(updateObject)
+        break
+    }
+    setColorObject({ color })
   }
 
   const sliders = useMemo(() => {
@@ -48,7 +68,7 @@ export function Home() {
               onClick={percentage => {
                 onClick(percentage, format, prop)
               }}
-              color={color}
+              colorObject={colorObject}
               format={format}
               prop={prop}
               stepsNum={stepsNum}
@@ -57,7 +77,7 @@ export function Home() {
         ))}
       </div>
     ))
-  }, [stepsNum, color])
+  }, [stepsNum, colorObject])
 
   return (
     <div className="home">

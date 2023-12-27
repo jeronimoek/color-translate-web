@@ -1,6 +1,7 @@
 import ColorTranslator, { Color } from 'color-translate'
 import { useMemo } from 'react'
 import './ColorSlider.scss'
+import { DEFAULT_STEPS_NUM } from 'shared/constants'
 
 function propToPercentage<T extends keyof ColorTranslator>(
   number: number,
@@ -26,18 +27,20 @@ function propToPercentage<T extends keyof ColorTranslator>(
 }
 
 export function ColorSlider<T extends keyof ColorTranslator>({
-  color,
+  colorObject,
   format,
   prop,
-  stepsNum = 7,
+  stepsNum = DEFAULT_STEPS_NUM,
   onClick,
 }: Readonly<{
-  color: ColorTranslator
+  colorObject: { color: ColorTranslator }
   format: T
   prop: T[number]
   stepsNum?: number
   onClick: (percentage: number) => any
 }>) {
+  const { color } = colorObject
+
   const background = useMemo(() => {
     const steps = []
 
@@ -60,7 +63,7 @@ export function ColorSlider<T extends keyof ColorTranslator>({
     }
 
     return `linear-gradient(90deg, ${steps.join(', ')})`
-  }, [stepsNum, color])
+  }, [stepsNum, colorObject])
 
   const propValue = (color[format] as Color)[prop as keyof Color] as number
   const propPercentage = propToPercentage(propValue, format, prop)
