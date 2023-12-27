@@ -25,8 +25,16 @@ export function Home() {
   })
 
   const { color } = colorObject
-
-  const formats = ['rgb', 'hsl', 'hwb', 'lab', 'lch'] as const
+  const formats = [
+    { format: 'rgb', values: ['r', 'g', 'b'] },
+    { format: 'hsl', values: ['h', 's', 'l'] },
+    { format: 'hwb', values: ['h', 'w', 'b'] },
+    { format: 'cmyk', values: ['c', 'm', 'y', 'k'] },
+    { format: 'lab', values: ['l', 'a', 'b'] },
+    { format: 'lch', values: ['l', 'c', 'h'] },
+    { format: 'oklab', values: ['l', 'a', 'b'] },
+    { format: 'oklch', values: ['l', 'c', 'h'] },
+  ] as const
 
   function onClick<T extends keyof ColorTranslator>(
     percentage: number,
@@ -50,6 +58,15 @@ export function Home() {
       case 'lch':
         color.updateLch(updateObject)
         break
+      case 'oklab':
+        color.updateOklab(updateObject)
+        break
+      case 'oklch':
+        color.updateOklch(updateObject)
+        break
+      case 'cmyk':
+        color.updateCmyk(updateObject)
+        break
       case 'rgb':
       default:
         color.updateRgb(updateObject)
@@ -59,18 +76,18 @@ export function Home() {
   }
 
   const sliders = useMemo(() => {
-    return formats.map(format => (
+    return formats.map(({ format, values }) => (
       <div key={format} className="format">
         <h4>{color[format].toString()}</h4>
-        {[...format.split('')].map(prop => (
-          <div key={prop} className="prop">
+        {values.map(value => (
+          <div key={value} className="prop">
             <ColorSlider
               onClick={percentage => {
-                onClick(percentage, format, prop)
+                onClick(percentage, format, value)
               }}
               colorObject={colorObject}
               format={format}
-              prop={prop}
+              prop={value}
               stepsNum={stepsNum}
             />
           </div>
