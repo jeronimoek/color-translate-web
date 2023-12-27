@@ -3,14 +3,12 @@ name: CI
 on:
   push:
     branches: ['master']
-  pull_request:
-    branches: ['master']
 
 env:
   CI: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
