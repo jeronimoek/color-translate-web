@@ -1,8 +1,10 @@
 * {
   box-sizing: border-box;
+  cursor: default;
 }
 
 body {
+  overflow-x: hidden;
   background-color: black;
   color: lightgray;
   margin: 0;
@@ -30,4 +32,12 @@ code {
 
 .ant-form-item {
   margin-bottom: 0;
+}
+
+.ant-tooltip {
+  .ant-tooltip-content {
+    .ant-tooltip-inner {
+      color: black;
+    }
+  }
 }

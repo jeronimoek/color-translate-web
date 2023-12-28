@@ -80,36 +80,54 @@ export function ColorSlider<T extends keyof ColorTranslator>({
   const propValue = (color[format] as Color)[prop as keyof Color] as number
   const propPercentage = propToPercentage(propValue, format, prop)
 
+  function mouseDownHandler(ev: { target: EventTarget; clientX: number }) {
+    function mouseMoveHandler(e: MouseEvent) {
+      moveHandler(e.clientX)
+    }
+
+    function touchMoveHandler(e: TouchEvent) {
+      moveHandler(e.touches[0].clientX)
+    }
+
+    function moveHandler(xCoord: number) {
+      const rect = (ev.target as HTMLDivElement).getBoundingClientRect()
+      let x = xCoord - rect.left
+      if (x < 0) x = 0
+      if (x > rect.width) x = rect.width
+      let percentage = x / rect.width
+      if (
+        (format === 'lab' || format === 'oklab') &&
+        (prop === 'a' || prop === 'b')
+      ) {
+        percentage = percentage * 2 - 1
+      }
+      onClick(percentage)
+    }
+
+    function mousemoveRemove() {
+      document.removeEventListener('mousemove', mouseMoveHandler)
+      document.removeEventListener('touchmove', touchMoveHandler)
+      document.removeEventListener('mouseup', mousemoveRemove)
+      document.removeEventListener('touchend', mousemoveRemove)
+    }
+
+    moveHandler(ev.clientX)
+
+    document.addEventListener('mousemove', mouseMoveHandler)
+    document.addEventListener('touchmove', touchMoveHandler)
+    document.addEventListener('mouseup', mousemoveRemove)
+    document.addEventListener('touchend', mousemoveRemove)
+  }
+
   return (
     <div
       style={{
         background,
       }}
       className="color-slider"
-      onMouseDown={ev => {
-        function mousemoveHandler(e: MouseEvent) {
-          const rect = (ev.target as Element).getBoundingClientRect()
-          const x = e.clientX - rect.left
-          if (x < 0 || x > rect.width) return
-          let percentage = x / rect.width
-          if (
-            (format === 'lab' || format === 'oklab') &&
-            (prop === 'a' || prop === 'b')
-          ) {
-            percentage = percentage * 2 - 1
-          }
-          onClick(percentage)
-        }
-
-        function mousemoveRemove() {
-          document.removeEventListener('mousemove', mousemoveHandler)
-          document.removeEventListener('mouseup', mousemoveRemove)
-        }
-
-        mousemoveHandler(ev as any)
-
-        document.addEventListener('mousemove', mousemoveHandler)
-        document.addEventListener('mouseup', mousemoveRemove)
+      onMouseDown={mouseDownHandler}
+      onTouchStart={e => {
+        mouseDownHandler(e.touches[0])
       }}
     >
       <div
