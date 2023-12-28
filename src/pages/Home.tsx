@@ -2,7 +2,9 @@ import { useMemo, useState } from 'react'
 import './Home.scss'
 import { ColorSlider } from 'components/ColorSlider'
 import ColorTranslator from 'color-translate'
-import { DEFAULT_STEPS_NUM } from 'shared/constants'
+import { WarningFilled } from '@ant-design/icons'
+import { Input, Tooltip, Form, message, Button } from 'antd'
+import { useForm } from 'antd/es/form/Form'
 
 export interface ITask {
   id: number
@@ -14,7 +16,7 @@ export interface ITask {
 }
 
 export function Home() {
-  const [stepsNum, setStepsNum] = useState<number>(DEFAULT_STEPS_NUM)
+  const [formRef] = useForm()
   const [colorObject, setColorObject] = useState<{ color: ColorTranslator }>({
     color: new ColorTranslator({
       r: 255,
@@ -26,7 +28,14 @@ export function Home() {
 
   const { color } = colorObject
   const formats = [
-    { format: 'rgb', values: ['r', 'g', 'b'] },
+    {
+      format: 'rgb',
+      extraFormats: [
+        'hex',
+        // 'hex0x'
+      ],
+      values: ['r', 'g', 'b'],
+    },
     { format: 'hsl', values: ['h', 's', 'l'] },
     { format: 'hwb', values: ['h', 'w', 'b'] },
     { format: 'cmyk', values: ['c', 'm', 'y', 'k'] },
@@ -34,7 +43,11 @@ export function Home() {
     { format: 'lch', values: ['l', 'c', 'h'] },
     { format: 'oklab', values: ['l', 'a', 'b'] },
     { format: 'oklch', values: ['l', 'c', 'h'] },
-  ] as const
+  ] as Array<{
+    format: keyof ColorTranslator
+    extraFormats?: Array<keyof ColorTranslator>
+    values: string[]
+  }>
 
   function onClick<T extends keyof ColorTranslator>(
     percentage: number,
@@ -76,42 +89,87 @@ export function Home() {
   }
 
   const sliders = useMemo(() => {
-    return formats.map(({ format, values }) => (
-      <div key={format} className="format">
-        <h4>{color[format].toString()}</h4>
-        {values.map(value => (
-          <div key={value} className="prop">
-            <ColorSlider
-              onClick={percentage => {
-                onClick(percentage, format, value)
-              }}
-              colorObject={colorObject}
-              format={format}
-              prop={value}
-              stepsNum={stepsNum}
-            />
+    return formats.map(({ format, extraFormats, values }) => {
+      const colorString = (color[format] as ColorTranslator['rgb']).toString()
+      const colorUncappedString = (
+        color[format] as ColorTranslator['rgb']
+      ).toString({ limitToColorSpace: false })
+
+      const inColorSpace = colorString === colorUncappedString
+
+      return (
+        <>
+          <div className="slider-header">
+            <h1>{format.toLocaleUpperCase()}</h1>
+            <div>
+              <div>
+                <b>{colorString}</b>
+              </div>
+              {extraFormats?.map(extraFormat => (
+                <div key={extraFormat}>
+                  <b>
+                    {(color[extraFormat] as ColorTranslator['rgb']).toString()}
+                  </b>
+                </div>
+              ))}
+            </div>
+            {!inColorSpace && (
+              <Tooltip
+                color="white"
+                title="The color doesn't fit in this color space"
+              >
+                <WarningFilled />
+              </Tooltip>
+            )}
           </div>
-        ))}
-      </div>
-    ))
-  }, [stepsNum, colorObject])
+          <div>
+            {values.map(value => (
+              <div key={value} className="prop">
+                <h4>{value.toLocaleUpperCase()}</h4>
+                <ColorSlider
+                  onClick={percentage => {
+                    onClick(percentage, format, value)
+                  }}
+                  colorObject={colorObject}
+                  format={format}
+                  prop={value}
+                />
+              </div>
+            ))}
+          </div>
+        </>
+      )
+    })
+  }, [colorObject])
 
   return (
     <div className="home">
       <div className="home_container">
-        <h1>My Formats</h1>
-        <div>
-          <input
-            type="number"
-            value={stepsNum}
-            min={0}
-            max={100}
-            onChange={e => {
-              setStepsNum(parseInt(e.target.value))
+        <div className="sliders-header">
+          <h4>Enter Color</h4>
+          <Form
+            form={formRef}
+            onFinish={({ color }): void => {
+              let newColor
+              try {
+                newColor = new ColorTranslator(color.trim())
+              } catch (error: any) {
+                void message.error({ content: error.toString() })
+                return
+              }
+              setColorObject({ color: newColor })
+              formRef.resetFields()
             }}
-          />
+          >
+            <Form.Item name="color">
+              <Input size="small" className="color-input" />
+            </Form.Item>
+            <Button type="primary" htmlType="submit" className="color-submit">
+              <span>OK</span>
+            </Button>
+          </Form>
         </div>
-        <div>{sliders}</div>
+        <div className="sliders">{sliders}</div>
       </div>
     </div>
   )
