@@ -2,36 +2,7 @@ import ColorTranslator, { Color } from 'color-translate'
 import { useMemo } from 'react'
 import './ColorSlider.scss'
 import { DEFAULT_STEPS_NUM } from 'shared/constants'
-
-function propToPercentage<T extends keyof ColorTranslator>(
-  number: number,
-  format: T,
-  prop: T[number],
-) {
-  if (format === 'rgb') {
-    return number / 255
-  } else if (
-    (format === 'hsl' ||
-      format === 'hwb' ||
-      format === 'lch' ||
-      format === 'oklch') &&
-    prop === 'h'
-  ) {
-    return number / 360
-  } else if ((format === 'lab' || format === 'lch') && prop === 'l') {
-    return number / 100
-  } else if (format === 'lab' && (prop === 'a' || prop === 'b')) {
-    return (number / 125 + 1) / 2
-  } else if (format === 'lch' && prop === 'c') {
-    return number / 150
-  } else if (format === 'oklab' && (prop === 'a' || prop === 'b')) {
-    return (number / 0.4 + 1) / 2
-  } else if (format === 'oklch' && prop === 'c') {
-    return number / 0.4
-  }
-
-  return number
-}
+import { propToPercentage } from 'shared/utils'
 
 export function ColorSlider<T extends keyof ColorTranslator>({
   colorObject,
@@ -39,12 +10,14 @@ export function ColorSlider<T extends keyof ColorTranslator>({
   prop,
   stepsNum = DEFAULT_STEPS_NUM,
   onClick,
+  smooth = false,
 }: Readonly<{
   colorObject: { color: ColorTranslator }
   format: T
   prop: T[number]
   stepsNum?: number
   onClick: (percentage: number) => any
+  smooth?: boolean
 }>) {
   const { color } = colorObject
 
@@ -131,7 +104,7 @@ export function ColorSlider<T extends keyof ColorTranslator>({
       }}
     >
       <div
-        className="picker-container"
+        className={`picker-container ${smooth ? 'smooth' : ''}`}
         style={{
           width: `calc(100% - ${propPercentage} * 100%)`,
         }}
