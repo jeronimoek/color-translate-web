@@ -1,10 +1,15 @@
 import { useMemo, useState } from 'react'
 import './Home.scss'
 import { ColorSlider } from 'components/ColorSlider'
-import ColorTranslator from 'color-translate'
-import { WarningFilled } from '@ant-design/icons'
+import ColorTranslator, { Color } from 'color-translate'
+import {
+  PauseCircleFilled,
+  PlayCircleFilled,
+  WarningFilled,
+} from '@ant-design/icons'
 import { Input, Tooltip, Form, message, Button } from 'antd'
 import { useForm } from 'antd/es/form/Form'
+import { propToPercentage, updateColor } from 'shared/utils'
 
 export interface ITask {
   id: number
@@ -25,6 +30,45 @@ export function Home() {
       alpha: 1,
     }),
   })
+  const [animatedProp, setAnimatedProp] = useState<{
+    format: string
+    prop: string
+    interval: NodeJS.Timer
+  }>()
+
+  function startPropAnimation<T extends keyof ColorTranslator>(
+    format: T,
+    prop: T[number],
+  ) {
+    stopPropAnimation()
+    let increase = true
+    const interval = setInterval(() => {
+      const propValue = (color[format] as Color)[prop as keyof Color] as number
+      let propPercentage = propToPercentage(propValue, format, prop)
+      if (propPercentage > 1) {
+        increase = false
+      } else if (propPercentage < 0) {
+        increase = true
+      }
+      propPercentage += 0.01 * (increase ? 1 : -1)
+      if (
+        (format === 'lab' || format === 'oklab') &&
+        (prop === 'a' || prop === 'b')
+      ) {
+        propPercentage = propPercentage * 2 - 1
+      }
+      updateColor(propPercentage, format, prop, color)
+      setColorObject({ color })
+    }, 50)
+    setAnimatedProp({ format, prop, interval })
+  }
+
+  function stopPropAnimation() {
+    if (animatedProp) {
+      clearInterval(animatedProp.interval)
+      setAnimatedProp(undefined)
+    }
+  }
 
   const { color } = colorObject
   const formats = [
@@ -34,19 +78,19 @@ export function Home() {
         'hex',
         // 'hex0x'
       ],
-      values: ['r', 'g', 'b'],
+      propNames: ['r', 'g', 'b'],
     },
-    { format: 'hsl', values: ['h', 's', 'l'] },
-    { format: 'hwb', values: ['h', 'w', 'b'] },
-    { format: 'cmyk', values: ['c', 'm', 'y', 'k'] },
-    { format: 'lab', values: ['l', 'a', 'b'] },
-    { format: 'lch', values: ['l', 'c', 'h'] },
-    { format: 'oklab', values: ['l', 'a', 'b'] },
-    { format: 'oklch', values: ['l', 'c', 'h'] },
+    { format: 'hsl', propNames: ['h', 's', 'l'] },
+    { format: 'hwb', propNames: ['h', 'w', 'b'] },
+    { format: 'cmyk', propNames: ['c', 'm', 'y', 'k'] },
+    { format: 'lab', propNames: ['l', 'a', 'b'] },
+    { format: 'lch', propNames: ['l', 'c', 'h'] },
+    { format: 'oklab', propNames: ['l', 'a', 'b'] },
+    { format: 'oklch', propNames: ['l', 'c', 'h'] },
   ] as Array<{
     format: keyof ColorTranslator
     extraFormats?: Array<keyof ColorTranslator>
-    values: string[]
+    propNames: string[]
   }>
 
   function onClick<T extends keyof ColorTranslator>(
@@ -54,42 +98,26 @@ export function Home() {
     format: T,
     prop: T[number],
   ) {
-    const updateObject = {
-      [prop]: `${percentage * 100}%`,
-    }
-
-    switch (format) {
-      case 'hsl':
-        color.updateHsl(updateObject)
-        break
-      case 'hwb':
-        color.updateHwb(updateObject)
-        break
-      case 'lab':
-        color.updateLab(updateObject)
-        break
-      case 'lch':
-        color.updateLch(updateObject)
-        break
-      case 'oklab':
-        color.updateOklab(updateObject)
-        break
-      case 'oklch':
-        color.updateOklch(updateObject)
-        break
-      case 'cmyk':
-        color.updateCmyk(updateObject)
-        break
-      case 'rgb':
-      default:
-        color.updateRgb(updateObject)
-        break
-    }
+    stopPropAnimation()
+    updateColor(percentage, format, prop, color)
     setColorObject({ color })
   }
 
+  function onFinish({ color }: { color: string }): void {
+    if (!color) return
+    let newColor
+    try {
+      newColor = new ColorTranslator(color.trim())
+    } catch (error: any) {
+      void message.error({ content: error.toString() })
+      return
+    }
+    setColorObject({ color: newColor })
+    formRef.resetFields()
+  }
+
   const sliders = useMemo(() => {
-    return formats.map(({ format, extraFormats, values }) => {
+    return formats.map(({ format, extraFormats, propNames }) => {
       const colorString = (color[format] as ColorTranslator['rgb']).toString()
       const colorUncappedString = (
         color[format] as ColorTranslator['rgb']
@@ -102,15 +130,11 @@ export function Home() {
           <div className="slider-header">
             <h1>{format.toLocaleUpperCase()}</h1>
             <div>
-              <div>
-                <b>{colorString}</b>
-              </div>
+              <h4>{colorString}</h4>
               {extraFormats?.map(extraFormat => (
-                <div key={extraFormat}>
-                  <b>
-                    {(color[extraFormat] as ColorTranslator['rgb']).toString()}
-                  </b>
-                </div>
+                <h4 key={extraFormat}>
+                  {(color[extraFormat] as ColorTranslator['rgb']).toString()}
+                </h4>
               ))}
             </div>
             {!inColorSpace && (
@@ -123,16 +147,32 @@ export function Home() {
             )}
           </div>
           <div>
-            {values.map(value => (
-              <div key={value} className="prop">
-                <h4>{value.toLocaleUpperCase()}</h4>
+            {propNames.map(propName => (
+              <div key={propName} className="prop">
+                {animatedProp &&
+                animatedProp.format === format &&
+                animatedProp.prop === propName ? (
+                  <PauseCircleFilled
+                    onClick={() => {
+                      stopPropAnimation()
+                    }}
+                  />
+                ) : (
+                  <PlayCircleFilled
+                    onClick={() => {
+                      startPropAnimation(format, propName)
+                    }}
+                  />
+                )}
+                <h4>{propName.toLocaleUpperCase()}</h4>
                 <ColorSlider
                   onClick={percentage => {
-                    onClick(percentage, format, value)
+                    onClick(percentage, format, propName)
                   }}
                   colorObject={colorObject}
                   format={format}
-                  prop={value}
+                  prop={propName}
+                  smooth={!!animatedProp}
                 />
               </div>
             ))}
@@ -140,27 +180,14 @@ export function Home() {
         </>
       )
     })
-  }, [colorObject])
+  }, [colorObject, animatedProp])
 
   return (
     <div className="home">
       <div className="home_container">
-        <div className="sliders-header">
+        <div className="header">
           <h4>Enter Color</h4>
-          <Form
-            form={formRef}
-            onFinish={({ color }): void => {
-              let newColor
-              try {
-                newColor = new ColorTranslator(color.trim())
-              } catch (error: any) {
-                void message.error({ content: error.toString() })
-                return
-              }
-              setColorObject({ color: newColor })
-              formRef.resetFields()
-            }}
-          >
+          <Form form={formRef} onFinish={onFinish}>
             <Form.Item name="color">
               <Input size="small" className="color-input" />
             </Form.Item>

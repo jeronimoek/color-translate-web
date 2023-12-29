@@ -10,7 +10,7 @@
     width: 80%;
     max-width: 1000px;
 
-    .sliders-header {
+    .header {
       margin: 0 auto;
       width: max-content;
       text-align: center;
@@ -51,10 +51,33 @@
           flex: 0 0 120px;
           margin: 0;
         }
+
+        @media screen and (max-width: 480px) {
+          h1 {
+            font-size: 22px;
+            flex: 0 0 60px;
+          }
+          h4 {
+            font-size: 14px;
+          }
+        }
       }
 
       .prop {
         display: flex;
+
+        .anticon {
+          flex: 0 0 30px;
+
+          svg {
+            cursor: pointer;
+
+            path {
+              cursor: pointer;
+            }
+          }
+        }
+
         h4 {
           margin: 0;
           flex: 0 0 30px;

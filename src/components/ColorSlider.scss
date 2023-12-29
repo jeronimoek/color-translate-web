@@ -21,6 +21,9 @@
     right: 0px;
     pointer-events: none;
     max-width: 100%;
+    &.smooth {
+      transition: width 0.1s linear;
+    }
 
     .picker {
       position: absolute;
