@@ -1,7 +1,7 @@
 import { PauseCircleFilled, PlayCircleFilled } from '@ant-design/icons'
 import ColorTranslator, { Color } from 'color-translate'
 import { propToPercentage, updateColor } from 'shared/utils'
-import { ColorSliderInput } from './ColorSliderInput'
+import { ColorSliderInput } from '../ColorSliderInput/ColorSliderInput'
 import './ColorSlider.scss'
 
 interface IProps {

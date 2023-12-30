@@ -1,0 +1,16 @@
+.logo {
+  height: min(100px, 10vw);
+  width: min(100px, 10vw);
+  position: fixed;
+  right: 20;
+  bottom: 20;
+  cursor: pointer;
+
+  image {
+    height: 100%;
+    width: 100%;
+    border-radius: 999;
+    background-color: black;
+    cursor: pointer;
+  }
+}
