@@ -57,6 +57,15 @@
       }
     }
 
+    .alpha-slider {
+      margin-bottom: 20px;
+
+      h4 {
+        text-align: start;
+        flex-basis: 70px;
+      }
+    }
+
     .sliders {
       @media screen and (max-width: 1024px) {
         grid-template-columns: auto;
