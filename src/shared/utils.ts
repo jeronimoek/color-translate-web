@@ -5,7 +5,9 @@ export function propToPercentage<T extends keyof ColorTranslator>(
   format: T,
   prop: T[number],
 ) {
-  if (format === 'rgb') {
+  if (prop === 'alpha') {
+    return number
+  } else if (format === 'rgb') {
     return number / 255
   } else if (
     (format === 'hsl' ||

@@ -87,17 +87,38 @@ export function Home() {
           format={format}
           extraFormats={extraFormats}
         />
+        <div>
+          {propNames.map(propName => (
+            <ColorSlider
+              key={propName}
+              colorObject={colorObject}
+              setColorObject={setColorObject}
+              animatedProp={animatedProp}
+              setAnimatedProp={setAnimatedProp}
+              format={format}
+              propName={propName}
+              stopPropAnimation={stopPropAnimation}
+            />
+          ))}
+        </div>
+      </>
+    ))
+  }, [colorObject, animatedProp])
+
+  const alphaSlider = useMemo(() => {
+    return (
+      <div>
         <ColorSlider
           colorObject={colorObject}
           setColorObject={setColorObject}
           animatedProp={animatedProp}
           setAnimatedProp={setAnimatedProp}
-          format={format}
-          propNames={propNames}
+          format="rgb"
+          propName="alpha"
           stopPropAnimation={stopPropAnimation}
         />
-      </>
-    ))
+      </div>
+    )
   }, [colorObject, animatedProp])
 
   return (
@@ -118,6 +139,7 @@ export function Home() {
             </Button>
           </Form>
         </div>
+        <div className="alpha-slider">{alphaSlider}</div>
         <div className="sliders">{sliders}</div>
       </div>
     </div>

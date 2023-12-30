@@ -18,7 +18,7 @@ interface IProps {
     interval: NodeJS.Timer
   }) => void
   format: keyof ColorTranslator
-  propNames: string[]
+  propName: string
   stopPropAnimation: () => void
 }
 
@@ -29,7 +29,7 @@ export function ColorSlider(props: IProps) {
     animatedProp,
     setAnimatedProp,
     format,
-    propNames,
+    propName,
     stopPropAnimation,
   } = props
 
@@ -73,36 +73,32 @@ export function ColorSlider(props: IProps) {
   }
 
   return (
-    <div>
-      {propNames.map(propName => (
-        <div key={propName} className="prop">
-          {animatedProp &&
-          animatedProp.format === format &&
-          animatedProp.prop === propName ? (
-            <PauseCircleFilled
-              onClick={() => {
-                stopPropAnimation()
-              }}
-            />
-          ) : (
-            <PlayCircleFilled
-              onClick={() => {
-                startPropAnimation(format, propName)
-              }}
-            />
-          )}
-          <h4>{propName.toLocaleUpperCase()}</h4>
-          <ColorSliderInput
-            onClick={percentage => {
-              onClick(percentage, format, propName)
-            }}
-            colorObject={colorObject}
-            format={format}
-            prop={propName}
-            smooth={!!animatedProp}
-          />
-        </div>
-      ))}
+    <div key={propName} className="prop">
+      {animatedProp &&
+      animatedProp.format === format &&
+      animatedProp.prop === propName ? (
+        <PauseCircleFilled
+          onClick={() => {
+            stopPropAnimation()
+          }}
+        />
+      ) : (
+        <PlayCircleFilled
+          onClick={() => {
+            startPropAnimation(format, propName)
+          }}
+        />
+      )}
+      <h4>{propName.toLocaleUpperCase()}</h4>
+      <ColorSliderInput
+        onClick={percentage => {
+          onClick(percentage, format, propName)
+        }}
+        colorObject={colorObject}
+        format={format}
+        prop={propName}
+        smooth={!!animatedProp}
+      />
     </div>
   )
 }
