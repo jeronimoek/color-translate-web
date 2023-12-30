@@ -3,8 +3,9 @@ import './Home.scss'
 import ColorTranslator from 'color-translate'
 import { Input, Form, message, Button } from 'antd'
 import { useForm } from 'antd/es/form/Form'
-import { ColorSlider } from 'components/ColorSlider'
-import { ColorSliderHeader } from 'components/ColorSliderHeader'
+import { ColorSlider } from 'components/ColorSlider/ColorSlider'
+import { ColorSliderHeader } from 'components/ColorSliderHeader/ColorSliderHeader'
+import { GithubLogo } from 'components/GithubLogo/GithubLogo'
 
 export interface ITask {
   id: number
@@ -122,26 +123,29 @@ export function Home() {
   }, [colorObject, animatedProp])
 
   return (
-    <div className="home">
-      <div className="home_container">
-        <h2 className="title">Color Translator and Picker</h2>
-        <div className="header">
-          <Form form={formRef} onFinish={onFinish} className="color-form">
-            <Form.Item name="color">
-              <Input
-                size="small"
-                className="color-input"
-                placeholder={color.rgb.toString()}
-              />
-            </Form.Item>
-            <Button type="primary" htmlType="submit" className="color-submit">
-              SET
-            </Button>
-          </Form>
+    <>
+      <div className="home">
+        <div className="home_container">
+          <h2 className="title">Color Translator and Picker</h2>
+          <div className="header">
+            <Form form={formRef} onFinish={onFinish} className="color-form">
+              <Form.Item name="color">
+                <Input
+                  size="small"
+                  className="color-input"
+                  placeholder={color.rgb.toString()}
+                />
+              </Form.Item>
+              <Button type="primary" htmlType="submit" className="color-submit">
+                SET
+              </Button>
+            </Form>
+          </div>
+          <div className="alpha-slider">{alphaSlider}</div>
+          <div className="sliders">{sliders}</div>
         </div>
-        <div className="alpha-slider">{alphaSlider}</div>
-        <div className="sliders">{sliders}</div>
       </div>
-    </div>
+      <GithubLogo />
+    </>
   )
 }

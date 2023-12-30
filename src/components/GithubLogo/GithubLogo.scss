@@ -1,0 +1,62 @@
+.logo {
+  height: min(100px, 10vw);
+  width: min(100px, 10vw);
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  cursor: pointer;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: gray 0 0 10px;
+
+  img {
+    height: 100%;
+    width: 100%;
+    border-radius: 999px;
+    background-color: black;
+    cursor: pointer;
+    transform: scale(1.01);
+  }
+
+  .star {
+    animation: shine 4s;
+    animation-fill-mode: forwards;
+    position: absolute;
+    width: 20%;
+    height: 20%;
+
+    &::before,
+    &::after {
+      content: '';
+      display: block;
+      width: 20%;
+      height: 100%;
+      margin: 0 auto;
+      border-radius: 50%;
+      top: 0;
+      left: 40%;
+      position: absolute;
+      background: gold;
+    }
+    &::after {
+      transform: rotate(90deg);
+    }
+
+    @keyframes shine {
+      0% {
+        opacity: 0;
+        transform: rotate(0deg) scale(0);
+        transition-property: transform opacity;
+        transition-duration: 1s;
+      }
+      85% {
+        opacity: 1;
+        transform: rotate(540deg) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: rotate(540deg) scale(0);
+      }
+    }
+  }
+}
