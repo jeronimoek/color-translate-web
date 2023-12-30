@@ -9,25 +9,50 @@
     }
     width: 80%;
     max-width: 1000px;
+    text-align: center;
+
+    .title {
+      margin: 20px 0;
+    }
 
     .header {
       margin: 0 auto;
       width: max-content;
-      text-align: center;
       margin-bottom: 20px;
 
       h4 {
         margin: 0;
       }
-      .color-input {
-        width: 250px;
-        cursor: text;
-      }
-      .color-submit {
-        height: 30px;
+      .color-form {
+        display: flex;
+        align-items: center;
+        gap: 5px;
 
-        span {
+        .color-input {
+          width: 250px;
+          cursor: text;
+          background-color: #444;
+          border: none;
+          color: white;
+          caret-color: white;
+
+          &::placeholder {
+            color: #888;
+          }
+        }
+        .color-submit {
+          height: 22px;
+          color: black;
+          background-color: white;
+          padding: 0 10px;
+          align-items: center;
           cursor: pointer;
+          line-height: 1;
+          font-weight: bold;
+
+          span {
+            cursor: pointer;
+          }
         }
       }
     }
@@ -36,53 +61,12 @@
       @media screen and (max-width: 1024px) {
         grid-template-columns: auto;
       }
+      text-align: start;
       display: grid;
       column-gap: 40px;
       row-gap: 20px;
       grid-template-columns: 400px auto;
       align-items: center;
-
-      .slider-header {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-
-        h1 {
-          flex: 0 0 120px;
-          margin: 0;
-        }
-
-        @media screen and (max-width: 480px) {
-          h1 {
-            font-size: 22px;
-            flex: 0 0 60px;
-          }
-          h4 {
-            font-size: 14px;
-          }
-        }
-      }
-
-      .prop {
-        display: flex;
-
-        .anticon {
-          flex: 0 0 30px;
-
-          svg {
-            cursor: pointer;
-
-            path {
-              cursor: pointer;
-            }
-          }
-        }
-
-        h4 {
-          margin: 0;
-          flex: 0 0 30px;
-        }
-      }
     }
   }
 }
