@@ -1,116 +1,108 @@
+import { PauseCircleFilled, PlayCircleFilled } from '@ant-design/icons'
 import ColorTranslator, { Color } from 'color-translate'
-import { useMemo } from 'react'
+import { propToPercentage, updateColor } from 'shared/utils'
+import { ColorSliderInput } from './ColorSliderInput'
 import './ColorSlider.scss'
-import { DEFAULT_STEPS_NUM } from 'shared/constants'
-import { propToPercentage } from 'shared/utils'
 
-export function ColorSlider<T extends keyof ColorTranslator>({
-  colorObject,
-  format,
-  prop,
-  stepsNum = DEFAULT_STEPS_NUM,
-  onClick,
-  smooth = false,
-}: Readonly<{
+interface IProps {
   colorObject: { color: ColorTranslator }
-  format: T
-  prop: T[number]
-  stepsNum?: number
-  onClick: (percentage: number) => any
-  smooth?: boolean
-}>) {
+  setColorObject: (input: { color: ColorTranslator }) => void
+  animatedProp?: {
+    format: string
+    prop: string
+    interval: NodeJS.Timer
+  }
+  setAnimatedProp: (input?: {
+    format: string
+    prop: string
+    interval: NodeJS.Timer
+  }) => void
+  format: keyof ColorTranslator
+  propNames: string[]
+  stopPropAnimation: () => void
+}
+
+export function ColorSlider(props: IProps) {
+  const {
+    colorObject,
+    setColorObject,
+    animatedProp,
+    setAnimatedProp,
+    format,
+    propNames,
+    stopPropAnimation,
+  } = props
+
   const { color } = colorObject
 
-  const background = useMemo(() => {
-    const steps = []
-
-    for (let i = 0; i < stepsNum; i++) {
-      let step: number
+  function startPropAnimation<T extends keyof ColorTranslator>(
+    format: T,
+    prop: T[number],
+  ) {
+    stopPropAnimation()
+    let increase = true
+    const interval = setInterval(() => {
+      const propValue = (color[format] as Color)[prop as keyof Color] as number
+      let propPercentage = propToPercentage(propValue, format, prop)
+      if (propPercentage > 1) {
+        increase = false
+      } else if (propPercentage < 0) {
+        increase = true
+      }
+      propPercentage += 0.01 * (increase ? 1 : -1)
       if (
         (format === 'lab' || format === 'oklab') &&
         (prop === 'a' || prop === 'b')
       ) {
-        step = (i / (stepsNum - 1)) * 200 - 100
-      } else {
-        step = (i / (stepsNum - 1)) * 100
+        propPercentage = propPercentage * 2 - 1
       }
+      updateColor(propPercentage, format, prop, color)
+      setColorObject({ color })
+    }, 50)
+    setAnimatedProp({ format, prop, interval })
+  }
 
-      const stringFormat = format !== 'cmyk' ? format : 'rgb'
-
-      steps.push(
-        (
-          new ColorTranslator({
-            ...(color[format] as Color),
-            [prop]: `${step}%`,
-          })[stringFormat] as { toString: () => string }
-        ).toString(),
-      )
-    }
-
-    return `linear-gradient(90deg, ${steps.join(', ')})`
-  }, [stepsNum, colorObject])
-
-  const propValue = (color[format] as Color)[prop as keyof Color] as number
-  const propPercentage = propToPercentage(propValue, format, prop)
-
-  function mouseDownHandler(ev: { target: EventTarget; clientX: number }) {
-    function mouseMoveHandler(e: MouseEvent) {
-      moveHandler(e.clientX)
-    }
-
-    function touchMoveHandler(e: TouchEvent) {
-      moveHandler(e.touches[0].clientX)
-    }
-
-    function moveHandler(xCoord: number) {
-      const rect = (ev.target as HTMLDivElement).getBoundingClientRect()
-      let x = xCoord - rect.left
-      if (x < 0) x = 0
-      if (x > rect.width) x = rect.width
-      let percentage = x / rect.width
-      if (
-        (format === 'lab' || format === 'oklab') &&
-        (prop === 'a' || prop === 'b')
-      ) {
-        percentage = percentage * 2 - 1
-      }
-      onClick(percentage)
-    }
-
-    function mousemoveRemove() {
-      document.removeEventListener('mousemove', mouseMoveHandler)
-      document.removeEventListener('touchmove', touchMoveHandler)
-      document.removeEventListener('mouseup', mousemoveRemove)
-      document.removeEventListener('touchend', mousemoveRemove)
-    }
-
-    moveHandler(ev.clientX)
-
-    document.addEventListener('mousemove', mouseMoveHandler)
-    document.addEventListener('touchmove', touchMoveHandler)
-    document.addEventListener('mouseup', mousemoveRemove)
-    document.addEventListener('touchend', mousemoveRemove)
+  function onClick<T extends keyof ColorTranslator>(
+    percentage: number,
+    format: T,
+    prop: T[number],
+  ) {
+    stopPropAnimation()
+    updateColor(percentage, format, prop, color)
+    setColorObject({ color })
   }
 
   return (
-    <div
-      style={{
-        background,
-      }}
-      className="color-slider"
-      onMouseDown={mouseDownHandler}
-      onTouchStart={e => {
-        mouseDownHandler(e.touches[0])
-      }}
-    >
-      <div
-        className={`picker-container ${smooth ? 'smooth' : ''}`}
-        style={{
-          width: `calc(100% - ${propPercentage} * 100%)`,
-        }}
-      >
-        <div className="picker" />
-      </div>
+    <div>
+      {propNames.map(propName => (
+        <div key={propName} className="prop">
+          {animatedProp &&
+          animatedProp.format === format &&
+          animatedProp.prop === propName ? (
+            <PauseCircleFilled
+              onClick={() => {
+                stopPropAnimation()
+              }}
+            />
+          ) : (
+            <PlayCircleFilled
+              onClick={() => {
+                startPropAnimation(format, propName)
+              }}
+            />
+          )}
+          <h4>{propName.toLocaleUpperCase()}</h4>
+          <ColorSliderInput
+            onClick={percentage => {
+              onClick(percentage, format, propName)
+            }}
+            colorObject={colorObject}
+            format={format}
+            prop={propName}
+            smooth={!!animatedProp}
+          />
+        </div>
+      ))}
     </div>
   )
 }

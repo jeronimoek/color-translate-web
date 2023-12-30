@@ -1,15 +1,10 @@
 import { useMemo, useState } from 'react'
 import './Home.scss'
-import { ColorSlider } from 'components/ColorSlider'
-import ColorTranslator, { Color } from 'color-translate'
-import {
-  PauseCircleFilled,
-  PlayCircleFilled,
-  WarningFilled,
-} from '@ant-design/icons'
-import { Input, Tooltip, Form, message, Button } from 'antd'
+import ColorTranslator from 'color-translate'
+import { Input, Form, message, Button } from 'antd'
 import { useForm } from 'antd/es/form/Form'
-import { propToPercentage, updateColor } from 'shared/utils'
+import { ColorSlider } from 'components/ColorSlider'
+import { ColorSliderHeader } from 'components/ColorSliderHeader'
 
 export interface ITask {
   id: number
@@ -36,32 +31,7 @@ export function Home() {
     interval: NodeJS.Timer
   }>()
 
-  function startPropAnimation<T extends keyof ColorTranslator>(
-    format: T,
-    prop: T[number],
-  ) {
-    stopPropAnimation()
-    let increase = true
-    const interval = setInterval(() => {
-      const propValue = (color[format] as Color)[prop as keyof Color] as number
-      let propPercentage = propToPercentage(propValue, format, prop)
-      if (propPercentage > 1) {
-        increase = false
-      } else if (propPercentage < 0) {
-        increase = true
-      }
-      propPercentage += 0.01 * (increase ? 1 : -1)
-      if (
-        (format === 'lab' || format === 'oklab') &&
-        (prop === 'a' || prop === 'b')
-      ) {
-        propPercentage = propPercentage * 2 - 1
-      }
-      updateColor(propPercentage, format, prop, color)
-      setColorObject({ color })
-    }, 50)
-    setAnimatedProp({ format, prop, interval })
-  }
+  const { color } = colorObject
 
   function stopPropAnimation() {
     if (animatedProp) {
@@ -70,7 +40,6 @@ export function Home() {
     }
   }
 
-  const { color } = colorObject
   const formats = [
     {
       format: 'rgb',
@@ -93,106 +62,59 @@ export function Home() {
     propNames: string[]
   }>
 
-  function onClick<T extends keyof ColorTranslator>(
-    percentage: number,
-    format: T,
-    prop: T[number],
-  ) {
-    stopPropAnimation()
-    updateColor(percentage, format, prop, color)
-    setColorObject({ color })
-  }
-
   function onFinish({ color }: { color: string }): void {
     if (!color) return
     let newColor
     try {
       newColor = new ColorTranslator(color.trim())
     } catch (error: any) {
-      void message.error({ content: error.toString() })
+      void message.error({
+        content: error.toString(),
+        duration: 1,
+      })
       return
     }
+    stopPropAnimation()
     setColorObject({ color: newColor })
     formRef.resetFields()
   }
 
   const sliders = useMemo(() => {
-    return formats.map(({ format, extraFormats, propNames }) => {
-      const colorString = (color[format] as ColorTranslator['rgb']).toString()
-      const colorUncappedString = (
-        color[format] as ColorTranslator['rgb']
-      ).toString({ limitToColorSpace: false })
-
-      const inColorSpace = colorString === colorUncappedString
-
-      return (
-        <>
-          <div className="slider-header">
-            <h1>{format.toLocaleUpperCase()}</h1>
-            <div>
-              <h4>{colorString}</h4>
-              {extraFormats?.map(extraFormat => (
-                <h4 key={extraFormat}>
-                  {(color[extraFormat] as ColorTranslator['rgb']).toString()}
-                </h4>
-              ))}
-            </div>
-            {!inColorSpace && (
-              <Tooltip
-                color="white"
-                title="The color doesn't fit in this color space"
-              >
-                <WarningFilled />
-              </Tooltip>
-            )}
-          </div>
-          <div>
-            {propNames.map(propName => (
-              <div key={propName} className="prop">
-                {animatedProp &&
-                animatedProp.format === format &&
-                animatedProp.prop === propName ? (
-                  <PauseCircleFilled
-                    onClick={() => {
-                      stopPropAnimation()
-                    }}
-                  />
-                ) : (
-                  <PlayCircleFilled
-                    onClick={() => {
-                      startPropAnimation(format, propName)
-                    }}
-                  />
-                )}
-                <h4>{propName.toLocaleUpperCase()}</h4>
-                <ColorSlider
-                  onClick={percentage => {
-                    onClick(percentage, format, propName)
-                  }}
-                  colorObject={colorObject}
-                  format={format}
-                  prop={propName}
-                  smooth={!!animatedProp}
-                />
-              </div>
-            ))}
-          </div>
-        </>
-      )
-    })
+    return formats.map(({ format, extraFormats, propNames }) => (
+      <>
+        <ColorSliderHeader
+          color={color}
+          format={format}
+          extraFormats={extraFormats}
+        />
+        <ColorSlider
+          colorObject={colorObject}
+          setColorObject={setColorObject}
+          animatedProp={animatedProp}
+          setAnimatedProp={setAnimatedProp}
+          format={format}
+          propNames={propNames}
+          stopPropAnimation={stopPropAnimation}
+        />
+      </>
+    ))
   }, [colorObject, animatedProp])
 
   return (
     <div className="home">
       <div className="home_container">
+        <h2 className="title">Color Translator and Picker</h2>
         <div className="header">
-          <h4>Enter Color</h4>
-          <Form form={formRef} onFinish={onFinish}>
+          <Form form={formRef} onFinish={onFinish} className="color-form">
             <Form.Item name="color">
-              <Input size="small" className="color-input" />
+              <Input
+                size="small"
+                className="color-input"
+                placeholder={color.rgb.toString()}
+              />
             </Form.Item>
             <Button type="primary" htmlType="submit" className="color-submit">
-              <span>OK</span>
+              SET
             </Button>
           </Form>
         </div>
