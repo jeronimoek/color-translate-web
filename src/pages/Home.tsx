@@ -20,10 +20,9 @@ export function Home() {
   const [formRef] = useForm()
   const [colorObject, setColorObject] = useState<{ color: ColorTranslator }>({
     color: new ColorTranslator({
-      r: 255,
-      g: 255,
-      b: 123,
-      alpha: 1,
+      r: 0,
+      g: 200,
+      b: 200,
     }),
   })
   const [animatedProp, setAnimatedProp] = useState<{
