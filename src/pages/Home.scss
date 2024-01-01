@@ -57,6 +57,33 @@
       }
     }
 
+    .selected-color {
+      position: relative;
+      width: 200px;
+      height: 60px;
+      margin: 0 auto 20px;
+      border-radius: 10px;
+
+      &::after,
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        height: 40px;
+        width: 40px;
+        transform: translate(0, -50%);
+        border-radius: 10px;
+      }
+      &::after {
+        left: 25%;
+        background: white;
+      }
+      &::before {
+        right: 25%;
+        background: black;
+      }
+    }
+
     .alpha-slider {
       margin-bottom: 20px;
 

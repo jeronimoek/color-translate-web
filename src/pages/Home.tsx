@@ -141,6 +141,10 @@ export function Home() {
               </Button>
             </Form>
           </div>
+          <div
+            className="selected-color"
+            style={{ backgroundColor: color.oklch.toString() }}
+          />
           <div className="alpha-slider">{alphaSlider}</div>
           <div className="sliders">{sliders}</div>
         </div>
