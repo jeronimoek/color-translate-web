@@ -56,6 +56,7 @@ export function Home() {
     { format: 'lch', propNames: ['l', 'c', 'h'] },
     { format: 'oklab', propNames: ['l', 'a', 'b'] },
     { format: 'oklch', propNames: ['l', 'c', 'h'] },
+    { format: 'a98', propNames: ['r', 'g', 'b'] },
   ] as Array<{
     format: keyof ColorTranslator
     extraFormats?: Array<keyof ColorTranslator>
