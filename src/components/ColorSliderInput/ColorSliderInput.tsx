@@ -26,7 +26,9 @@ export function ColorSliderInput<T extends keyof ColorTranslator>({
 
     for (let i = 0; i < stepsNum; i++) {
       let step: number
-      if (
+      if (format === 'a98') {
+        step = i / (stepsNum - 1)
+      } else if (
         (format === 'lab' || format === 'oklab') &&
         (prop === 'a' || prop === 'b')
       ) {

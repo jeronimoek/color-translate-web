@@ -5,7 +5,7 @@ export function propToPercentage<T extends keyof ColorTranslator>(
   format: T,
   prop: T[number],
 ) {
-  if (prop === 'alpha') {
+  if (prop === 'alpha' || format === 'a98') {
     return number
   } else if (format === 'rgb') {
     return number / 255
@@ -40,7 +40,7 @@ export function updateColor<T extends keyof ColorTranslator>(
   color: ColorTranslator,
 ) {
   const updateObject = {
-    [prop]: `${percentage * 100}%`,
+    [prop]: format === 'a98' ? percentage : `${percentage * 100}%`,
   }
 
   switch (format) {
@@ -64,6 +64,9 @@ export function updateColor<T extends keyof ColorTranslator>(
       break
     case 'cmyk':
       color.updateCmyk(updateObject)
+      break
+    case 'a98':
+      color.updateA98(updateObject)
       break
     case 'rgb':
     default:
