@@ -1,6 +1,6 @@
 # Color Translator and Picker
 
-Website of the [color-translate library](https://github.com/jeronimoek/color-translate)
+Website of the [color-translate](https://github.com/jeronimoek/color-translate) library
 
 This website allows one to translate, pick, and tune a color among multiple color formats, following the W3C standards.
 
